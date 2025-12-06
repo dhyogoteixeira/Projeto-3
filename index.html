@@ -1,255 +1,32 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DT Driver — Solicitar Corrida</title>
-
-  <style>
-    :root {
-      --bg:#0f172a;
-      --card:#0b1220;
-      --accent:#06b6d4;
-      --muted:#9aa4b2;
-      --glass: rgba(255,255,255,0.03);
-    }
-
-    * { box-sizing:border-box; font-family:Inter,system-ui,Arial; }
-
-    body {
-      margin:0;
-      background:linear-gradient(180deg,#071024 0%, #071a2a 100%);
-      color:#e6eef6;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-    }
-
-    .container { width:100%; max-width:980px; }
-
-    header {
-      display:flex;
-      align-items:center;
-      gap:16px;
-      margin-bottom:20px;
-    }
-
-    .logo {
-      width:64px;
-      height:64px;
-      border-radius:12px;
-      background:var(--glass);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:700;
-      color:var(--accent);
-      font-size:20px;
-    }
-
-    h1 { margin:0; font-size:20px; }
-
-    .grid {
-      display:grid;
-      grid-template-columns:1fr 360px;
-      gap:18px;
-    }
-
-    .card {
-      background:var(--card);
-      padding:18px;
-      border-radius:12px;
-      box-shadow:0 6px 18px rgba(2,6,23,0.6);
-    }
-
-    label {
-      display:block;
-      font-size:13px;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-
-    input, textarea, select {
-      width:100%;
-      padding:10px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,0.04);
-      background:transparent;
-      color:inherit;
-      margin-bottom:10px;
-    }
-
-    button {
-      background:var(--accent);
-      border:none;
-      padding:10px 12px;
-      border-radius:10px;
-      color:#052027;
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .small { font-size:13px; }
-    .muted { color:var(--muted); }
-
-    .summary {
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      padding:14px;
-      border-radius:10px;
-    }
-
-    .map-placeholder {
-      height:220px;
-      border-radius:8px;
-      background:linear-gradient(180deg,#021426,#04233a);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--muted);
-    }
-
-    @media(max-width:880px) {
-      .grid { grid-template-columns:1fr; }
-      .logo { width:48px; height:48px; }
-      .card { padding:14px; }
-    }
-  </style>
-</head>
-
-<body>
-  <div class="container">
-
-    <header>
-      <div class="logo">DT</div>
-      <div>
-        <h1>DT Driver — Solicitar Corrida</h1>
-        <div class="muted small">Site simples pronto para publicar no GitHub Pages</div>
-      </div>
-    </header>
-
-    <div class="grid">
-
-      <!-- FORMULÁRIO -->
-      <section class="card">
-        <form id="rideForm" onsubmit="return false">
-          <label>Nome do Passageiro</label>
-          <input id="name" type="text" placeholder="Ex: João Silva" required>
-
-          <label>Telefone (WhatsApp)</label>
-          <input id="phone" type="tel" placeholder="55 21 99999-9999">
-
-          <label>Local de partida</label>
-          <input id="pickup" type="text" placeholder="Rua, número, bairro, cidade" required>
-
-          <label>Destino</label>
-          <input id="dropoff" type="text" placeholder="Rua, número, bairro, cidade" required>
-
-          <div style="display:flex; gap:8px; margin:10px 0; align-items:center">
-            <button type="button" id="useMyLocation">Usar minha localização</button>
-            <span class="muted small">(coordenadas aproximadas)</span>
-          </div>
-
-          <label>Observações</label>
-          <textarea id="notes" rows="3" placeholder="Mais bagagem, pets, etc"></textarea>
-
-          <div style="display:flex; gap:8px; margin-top:12px">
-            <button id="estimateBtn" type="button">Calcular valor</button>
-            <button id="requestBtn" type="button">Solicitar corrida</button>
-          </div>
-        </form>
-      </section>
-
-      <!-- RESUMO + MAPA -->
-      <aside class="card">
-        <div class="summary">
-          <div class="small muted">Resumo do pedido</div>
-          <h3 id="summaryTitle">Sem pedido</h3>
-          <div id="summaryContent" class="muted small">
-            Preencha origem e destino e clique em "Calcular valor".
-          </div>
-        </div>
-
-        <div style="height:12px"></div>
-
-        <div class="map-placeholder" id="map">Mapa (carregando...)</div>
-
-        <div style="height:12px"></div>
-
-        <div class="summary small">
-          <div><strong>Valor base:</strong> R$ <span id="base">5.00</span></div>
-          <div><strong>Preço por km:</strong> R$ <span id="perKm">2.50</span></div>
-          <div><strong>Estimativa:</strong> R$ <span id="estimate">-</span></div>
-        </div>
-
-        <div style="height:12px"></div>
-
-        <label class="muted small">Número do motorista (WhatsApp)</label>
-        <input id="ownerPhone" type="tel" placeholder="55XXXXXXXXXXX">
-      </aside>
-    </div>
-
-    <footer class="muted small">Feito para você — personalize tarifas e integre APIs.</footer>
-
-  </div>
-
 <script>
-let map, directionsService, directionsRenderer;
-const state = { base: 5.0, perKm: 2.5, distanceKm: 0 };
+/* ----------------------------
+   SISTEMA DE CORRIDA SEM MAPS
+   ---------------------------- */
 
-/* --- INICIALIZA MAPA --- */
-function initMap() {
-  map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: -22.9068, lng: -43.1729 },
-    zoom: 12,
-  });
+const state = {
+  base: 5.00,
+  perKm: 2.50,
+  distanceKm: 0,
+  userCoords: null
+};
 
-  directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer();
-  directionsRenderer.setMap(map);
+/* --- FÓRMULA DE HAVERSINE (Km entre 2 coordenadas) --- */
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371; // raio da terra
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+      Math.sin(dLat/2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // distância em km
 }
 
-/* --- CALCULA ROTA --- */
-function calculateRoute() {
-  const origin = document.getElementById("pickup").value.trim();
-  const dest   = document.getElementById("dropoff").value.trim();
-
-  if (!origin || !dest) {
-    alert("Preencha origem e destino.");
-    return;
-  }
-
-  directionsService.route(
-    { origin, destination: dest, travelMode: "DRIVING" },
-    (result, status) => {
-      if (status !== "OK") {
-        alert("Não foi possível calcular rota.");
-        return;
-      }
-
-      directionsRenderer.setDirections(result);
-
-      const meters = result.routes[0].legs[0].distance.value;
-      const km = meters / 1000;
-      state.distanceKm = km;
-
-      const price = (state.base + km * state.perKm).toFixed(2);
-      document.getElementById("estimate").innerText = price;
-
-      document.getElementById("summaryTitle").innerText = "Resumo da corrida";
-      document.getElementById("summaryContent").innerHTML =
-        `<strong>Origem:</strong> ${origin}<br>` +
-        `<strong>Destino:</strong> ${dest}<br>` +
-        `<strong>Distância:</strong> ${km.toFixed(2)} km<br>` +
-        `<strong>Total estimado:</strong> R$ ${price}`;
-    }
-  );
-}
-
-document.getElementById("estimateBtn").onclick = calculateRoute;
-
-/* --- USAR LOCALIZAÇÃO ATUAL --- */
+/* --- Obter coordenadas do usuário --- */
 document.getElementById("useMyLocation").onclick = () => {
   if (!navigator.geolocation) {
     alert("Seu navegador não suporta geolocalização.");
@@ -259,45 +36,72 @@ document.getElementById("useMyLocation").onclick = () => {
   navigator.geolocation.getCurrentPosition(
     pos => {
       const { latitude, longitude } = pos.coords;
-      document.getElementById("pickup").value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+      state.userCoords = { latitude, longitude };
+
+      document.getElementById("pickup").value =
+        `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+
+      document.getElementById("summaryContent").innerHTML =
+        `<strong>Origem definida via GPS</strong><br>` +
+        `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
     },
-    () => alert("Não foi possível acessar sua localização.")
+    err => alert("Não foi possível obter sua localização.")
   );
 };
 
-/* --- ENVIAR PEDIDO VIA WHATSAPP --- */
+/* --- Extrair coordenadas de um texto "lat, lng" --- */
+function parseCoords(text) {
+  const match = text.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+  return match ? { lat: parseFloat(match[1]), lng: parseFloat(match[2]) } : null;
+}
+
+/* --- Calcular distância --- */
+document.getElementById("estimateBtn").onclick = () => {
+  const pickup = document.getElementById("pickup").value.trim();
+  const dropoff = document.getElementById("dropoff").value.trim();
+
+  const originCoords = parseCoords(pickup);
+  const destCoords   = parseCoords(dropoff);
+
+  if (!originCoords || !destCoords) {
+    alert("Origem e destino precisam estar no formato coordenadas: -22.123456, -43.123456");
+    return;
+  }
+
+  const km = haversine(
+    originCoords.lat, originCoords.lng,
+    destCoords.lat,  destCoords.lng
+  );
+
+  const price = (state.base + km * state.perKm).toFixed(2);
+  state.distanceKm = km;
+
+  document.getElementById("estimate").innerText = price;
+
+  document.getElementById("summaryTitle").innerText = "Resumo da corrida";
+  document.getElementById("summaryContent").innerHTML =
+    `<strong>Origem:</strong> ${pickup}<br>` +
+    `<strong>Destino:</strong> ${dropoff}<br>` +
+    `<strong>Distância:</strong> ${km.toFixed(2)} km<br>` +
+    `<strong>Preço estimado:</strong> R$ ${price}`;
+};
+
+/* --- Enviar via WhatsApp --- */
 document.getElementById("requestBtn").onclick = () => {
-  const name  = document.getElementById("name").value || "-";
-  const phone = document.getElementById("phone").value || "-";
-  const pickup = document.getElementById("pickup").value;
-  const dropoff = document.getElementById("dropoff").value;
-  const notes = document.getElementById("notes").value || "-";
   const owner = document.getElementById("ownerPhone").value.replace(/[^0-9]/g, "");
 
-  const estimate = document.getElementById("estimate").innerText;
-  const km = state.distanceKm.toFixed(2);
-
-  if (!owner || owner.length < 10) {
+  if (owner.length < 10) {
     alert("Informe o número do motorista.");
     return;
   }
 
   const msg =
     `Pedido de corrida:%0A` +
-    `Nome: ${name}%0A` +
-    `Telefone: ${phone}%0A` +
-    `Origem: ${pickup}%0A` +
-    `Destino: ${dropoff}%0A` +
-    `Distância: ${km} km%0A` +
-    `Estimativa: R$ ${estimate}%0A` +
-    `Obs: ${notes}`;
+    `Origem: ${document.getElementById("pickup").value}%0A` +
+    `Destino: ${document.getElementById("dropoff").value}%0A` +
+    `Distância: ${state.distanceKm.toFixed(2)} km%0A` +
+    `Valor estimado: R$ ${document.getElementById("estimate").innerText}%0A`;
 
   window.open(`https://wa.me/${owner}?text=${msg}`, "_blank");
 };
 </script>
-
-<!-- GOOGLE MAPS API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
-
-</body>
-</html>
