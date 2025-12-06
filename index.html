@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DT Driver — Solicitar Corrida</title>
+  <title>DT Driver — Solicitar Corrida (Cachoeiras de Macacu - RJ)</title>
 
-  <!-- Leaflet (mapa gratuito) -->
+  <!-- Leaflet CSS/JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -20,13 +20,16 @@
     .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
     .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
     label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    input, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;margin-bottom:10px}
     .row{display:flex;gap:8px}
     button{background:var(--accent);border:none;padding:10px 12px;border-radius:10px;color:#052027;font-weight:700;cursor:pointer}
     .muted{color:var(--muted);font-size:13px}
+    .summary{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:10px}
+    .small{font-size:13px}
     .map-placeholder{height:220px;border-radius:8px;overflow:hidden}
     #map{height:100%;width:100%}
     footer{margin-top:12px;color:var(--muted);font-size:13px}
+    .notice{background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;margin-top:8px;color:var(--muted)}
     @media(max-width:880px){.grid{grid-template-columns:1fr;}.logo{width:48px;height:48px}.card{padding:14px}}
   </style>
 </head>
@@ -36,14 +39,14 @@
       <div class="logo">DT</div>
       <div>
         <h1>DT Driver — Solicitar Corrida</h1>
-        <div class="muted">GPS gratuito · OpenStreetMap</div>
+        <div class="muted small">Cachoeiras de Macacu - RJ · OpenStreetMap</div>
       </div>
     </header>
 
     <div class="grid">
       <!-- FORM -->
       <section class="card">
-        <form id="rideForm">
+        <form id="rideForm" onsubmit="return false">
           <label for="name">Nome do passageiro</label>
           <input id="name" type="text" placeholder="Ex: João Silva" required />
 
@@ -51,14 +54,14 @@
           <input id="phone" type="tel" placeholder="55 21 99999-9999" />
 
           <label for="pickup">Local de partida</label>
-          <input id="pickup" type="text" placeholder="Rua, número, bairro, cidade" required />
+          <input id="pickup" type="text" placeholder="Rua, número, bairro, cidade — ou lat, lon" required />
 
           <label for="dropoff">Destino</label>
-          <input id="dropoff" type="text" placeholder="Rua, número, bairro, cidade" required />
+          <input id="dropoff" type="text" placeholder="Rua, número, bairro, cidade — ou lat, lon" required />
 
-          <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:8px">
+          <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:8px;align-items:center">
             <button type="button" id="useMyLocation">Usar minha localização</button>
-            <div class="muted small">(preenche coordenadas)</div>
+            <div class="muted small">(preenche coordenadas; tenta resolver endereço)</div>
           </div>
 
           <label for="notes">Observações</label>
@@ -68,17 +71,17 @@
             <button id="estimateBtn" type="button">Calcular valor estimado</button>
             <button id="requestBtn" type="button">Solicitar corrida</button>
           </div>
+
+          <div class="notice">Dica: se digitar apenas rua/número, o sistema tenta automaticamente completar com <strong>Cachoeiras de Macacu - RJ</strong>.</div>
         </form>
       </section>
 
-      <!-- SIDEBAR -->
+      <!-- SIDEBAR: RESUMO E MAPA (PLACEHOLDER) -->
       <aside class="card">
         <div class="summary">
-          <div class="muted small">Resumo do pedido</div>
+          <div class="small muted">Resumo da corrida</div>
           <h3 id="summaryTitle">Sem pedido</h3>
-          <div id="summaryContent" class="muted small">
-            Preencha origem e destino e clique em "Calcular valor".
-          </div>
+          <div id="summaryContent" class="muted small">Preencha origem e destino e clique em "Calcular valor".</div>
         </div>
 
         <div style="height:12px"></div>
@@ -88,100 +91,164 @@
 
         <div style="height:12px"></div>
         <div class="summary small">
-          <div><strong>Preço por km:</strong> R$ <span id="perKm">2.50</span></div>
+          <div><strong>Preço por km:</strong> R$ <span id="perKm">3.00</span></div>
           <div><strong>Estimativa:</strong> R$ <span id="estimate">-</span></div>
         </div>
 
         <div style="height:12px"></div>
-        <label for="ownerPhone" class="muted small">Número do motorista (WhatsApp)</label>
+        <label for="ownerPhone" class="muted small">Número do motorista/empresa (para envio WhatsApp)</label>
         <input id="ownerPhone" type="tel" placeholder="55XXXXXXXXXXX" />
       </aside>
     </div>
 
-    <footer class="muted">Sistema gratuito com OpenStreetMap + OSRM</footer>
+    <footer class="muted">Feito com OpenStreetMap · Photon (Komoot) + Nominatim (fallback) + OSRM</footer>
   </div>
 
 <script>
-// ------------ MAPA GRATIS (Leaflet + OpenStreetMap) -----------------
+/* ======= CONFIGURAÇÕES ======= */
+const CITY_HINT = "Cachoeiras de Macacu, RJ"; // cidade padrão para melhorar buscas
+const PER_KM = 3.00;
 
-let map = L.map('map').setView([-22.9068, -43.1729], 12);
+/* ======= ESTADO ======= */
+let map = L.map('map').setView([-22.5163, -42.6817], 11); // view inicial aproximada RJ interior
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-let routeLayer;
-let state = { perKm: 3.00, distanceKm: 0 };
+let routeLayer = null;
+let state = { perKm: PER_KM, distanceKm: 0 };
 
-// ---------- Função: Geocodificar (Endereço → Coordenadas) ------------
+/* ======= UTIL: valida se texto é coordenada [lat, lon] ======= */
+function isCoords(text) {
+  return /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(text);
+}
+function parseCoords(text) {
+  const parts = text.split(',');
+  return { lat: parseFloat(parts[0].trim()), lon: parseFloat(parts[1].trim()) };
+}
+
+/* ======= GEOCODE: Photon (Komoot) com fallback Nominatim ======= */
+async function photonSearch(query) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=pt`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data.features || !data.features.length) return null;
+  const place = data.features[0];
+  return { lat: place.geometry.coordinates[1], lon: place.geometry.coordinates[0], name: place.properties.name || place.properties.city || place.properties.state || place.properties.country };
+}
+
+async function nominatimSearch(query) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+  const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR,pt' }});
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data.length) return null;
+  return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name };
+}
+
+/* geocode principal: aceita coordenadas, tenta Photon com city hint, tenta Photon direto, tenta Nominatim */
 async function geocode(address) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (data.length === 0) return null;
-  return {
-    lat: parseFloat(data[0].lat),
-    lon: parseFloat(data[0].lon)
-  };
+  if (!address || !address.trim()) return null;
+
+  // Se for coordenada, retorna direto
+  if (isCoords(address)) return parseCoords(address);
+
+  // Prepare queries to try (mais específico → geral)
+  const tries = [
+    `${address}, ${CITY_HINT}`,
+    address,
+    `${address} ${CITY_HINT}`,
+  ];
+
+  // Tenta Photon em cada variação
+  for (const q of tries) {
+    try {
+      const p = await photonSearch(q);
+      if (p) return { lat: p.lat, lon: p.lon };
+    } catch (e) { /* ignora e segue */ }
+  }
+
+  // fallback Nominatim
+  for (const q of tries) {
+    try {
+      const n = await nominatimSearch(q);
+      if (n) return { lat: n.lat, lon: n.lon };
+    } catch (e) { /* ignora */ }
+  }
+
+  return null;
 }
 
-// ---------- Função: Rota OSRM (grátis) -------------------------------
+/* ======= REVERSE GEOCODE (Nominatim) - opcional para mostrar rua quando usar GPS ======= */
+async function reverseGeocode(lat, lon) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
+    const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR,pt' }});
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.display_name || null;
+  } catch (e) { return null; }
+}
+
+/* ======= ROTAS: OSRM (routing.openstreetmap.de) ======= */
 async function getRoute(p1, p2) {
+  // p1, p2 : {lat, lon}
   const url = `https://routing.openstreetmap.de/routed-car/route/v1/driving/${p1.lon},${p1.lat};${p2.lon},${p2.lat}?overview=full&geometries=geojson`;
-
   const res = await fetch(url);
+  if (!res.ok) return null;
   const data = await res.json();
-
-  if (!data.routes) return null;
-
-  return {
-    distance: data.routes[0].distance / 1000,
-    geometry: data.routes[0].geometry
-  };
+  if (!data.routes || !data.routes.length) return null;
+  const route = data.routes[0];
+  return { distanceKm: route.distance / 1000, geometry: route.geometry };
 }
 
-// ---------- Calcular valor -------------------------------------------
+/* ======= FUNÇÃO PRINCIPAL: calcular rota e estimativa ======= */
 async function calculateRoute() {
-  const origin = document.getElementById("pickup").value;
-  const destination = document.getElementById("dropoff").value;
+  const rawOrigin = document.getElementById("pickup").value.trim();
+  const rawDest = document.getElementById("dropoff").value.trim();
 
-  if (!origin || !destination) return alert("Preencha origem e destino.");
+  if (!rawOrigin || !rawDest) return alert("Preencha origem e destino.");
 
-  const p1 = await geocode(origin);
-  const p2 = await geocode(destination);
+  // Geocode both
+  const p1 = await geocode(rawOrigin);
+  if (!p1) return alert("Não foi possível localizar a origem. Tente um endereço mais completo.");
+  const p2 = await geocode(rawDest);
+  if (!p2) return alert("Não foi possível localizar o destino. Tente um endereço mais completo.");
 
-  if (!p1 || !p2) return alert("Endereço não encontrado.");
-
+  // Get route from OSRM
   const route = await getRoute(p1, p2);
-  if (!route) return alert("Erro ao calcular rota.");
+  if (!route) return alert("Erro ao calcular rota. Tente novamente mais tarde.");
 
-  // Desenha rota no mapa
+  // Draw route
   if (routeLayer) map.removeLayer(routeLayer);
-  routeLayer = L.geoJSON(route.geometry).addTo(map);
-  map.fitBounds(routeLayer.getBounds());
+  routeLayer = L.geoJSON(route.geometry, { style: { color: '#06b6d4', weight: 4 } }).addTo(map);
 
-  state.distanceKm = route.distance;
+  // add markers (origin/dest)
+  const originMarker = L.circleMarker([p1.lat, p1.lon], { radius:6, color:'#00ffdd', fillColor:'#00ffdd', fillOpacity:1 }).bindPopup("Origem").addTo(map);
+  const destMarker   = L.circleMarker([p2.lat, p2.lon], { radius:6, color:'#ffcc00', fillColor:'#ffcc00', fillOpacity:1 }).bindPopup("Destino").addTo(map);
 
-  const price = (route.distance * state.perKm).toFixed(2);
+  // group and fit
+  const group = L.featureGroup([routeLayer, originMarker, destMarker]);
+  map.fitBounds(group.getBounds().pad(0.15));
+
+  // update state & UI
+  state.distanceKm = route.distanceKm;
+  const price = (state.distanceKm * state.perKm).toFixed(2);
   document.getElementById("estimate").innerText = price;
 
   document.getElementById("summaryTitle").innerText = "Resumo da corrida";
   document.getElementById("summaryContent").innerHTML =
-    `<strong>Origem:</strong> ${origin}<br>` +
-    `<strong>Destino:</strong> ${destination}<br>` +
-    `<strong>Distância:</strong> ${route.distance.toFixed(2)} km<br>` +
+    `<strong>Origem:</strong> ${rawOrigin}<br>` +
+    `<strong>Destino:</strong> ${rawDest}<br>` +
+    `<strong>Distância:</strong> ${state.distanceKm.toFixed(2)} km<br>` +
     `<strong>Estimativa:</strong> R$ ${price}`;
 }
 
-document.getElementById("estimateBtn").addEventListener("click", calculateRoute);
-
-// ----------- Localização do usuário --------------------------------
-document.getElementById("useMyLocation").addEventListener("click", () => {
-  navigator.geolocation.getCurrentPosition(pos => {
-    const { latitude, longitude } = pos.coords;
-    document.getElementById("pickup").value = `${latitude}, ${longitude}`;
-    map.setView([latitude, longitude], 15);
-  }, () => alert("Não foi possível acessar sua localização."));
+/* ======= BOTÕES e EVENTOS ======= */
+document.getElementById("estimateBtn").addEventListener("click", async () => {
+  document.getElementById("estimate").innerText = "…";
+  await calculateRoute();
 });
 
-// ----------- WhatsApp -----------------------------------------------
 document.getElementById("requestBtn").addEventListener("click", () => {
   const name = document.getElementById("name").value || "-";
   const phone = document.getElementById("phone").value || "-";
@@ -191,20 +258,49 @@ document.getElementById("requestBtn").addEventListener("click", () => {
   const owner = document.getElementById("ownerPhone").value.replace(/[^0-9]/g, "");
   const price = document.getElementById("estimate").innerText;
 
+  if (!owner || owner.length < 10) return alert("Informe o número do motorista para envio via WhatsApp.");
+
   const msg =
     `Pedido de corrida:%0A` +
     `Nome: ${name}%0A` +
     `Telefone: ${phone}%0A` +
     `Origem: ${pickup}%0A` +
     `Destino: ${dropoff}%0A` +
+    `Distância: ${state.distanceKm.toFixed(2)} km%0A` +
     `Valor estimado: R$ ${price}%0A` +
     `Obs: ${notes}`;
 
-  if (owner.length >= 10) window.open(`https://wa.me/${owner}?text=${msg}`, "_blank");
-  else alert("Informe o número do motorista.");
+  window.open(`https://wa.me/${owner}?text=${msg}`, "_blank");
 });
-</script>
 
+/* ======= USAR MINHA LOCALIZAÇÃO ======= */
+document.getElementById("useMyLocation").addEventListener("click", () => {
+  if (!navigator.geolocation) return alert("Geolocalização não suportada no navegador.");
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude, longitude } = pos.coords;
+    // preenche as coordenadas no campo pickup
+    const coordText = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+    document.getElementById("pickup").value = coordText;
+
+    // tenta reverse geocode para mostrar endereço legível
+    const human = await reverseGeocode(latitude, longitude);
+    if (human) {
+      // se encontrou, atualiza campo com nome mais legível (mas mantém coords para precisão)
+      document.getElementById("pickup").value = human + ` (${coordText})`;
+    }
+
+    // move o mapa para a localização
+    map.setView([latitude, longitude], 15);
+  }, err => {
+    alert("Não foi possível acessar sua localização. Verifique permissões.");
+  }, { enableHighAccuracy: true, timeout: 10000 });
+});
+
+/* Ajusta o valor exibido por km no HTML */
+document.getElementById("perKm").innerText = PER_KM.toFixed(2);
+state.perKm = PER_KM;
+
+/* ======= FIM ======= */
+</script>
 </body>
 </html>
-
