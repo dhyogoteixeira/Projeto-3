@@ -1,0 +1,113 @@
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Phone, Mail, Wrench, Monitor, ShieldCheck } from "lucide-react";
+
+export default function CodeFixerSite() {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <header className="flex items-center justify-between p-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3">
+          <img
+            src="/mnt/data/WhatsApp Image 2025-11-28 at 17.11.15.jpeg"
+            alt="CodeFixer Logo"
+            className="h-12 w-auto rounded-xl"
+          />
+          <h1 className="text-2xl font-bold">
+            <span className="text-blue-400">Code</span>
+            <span className="text-green-400">Fixer</span>
+          </h1>
+        </div>
+        <Button className="rounded-2xl px-6 py-2 text-base">Fale Conosco</Button>
+      </header>
+
+      {/* Hero Section */}
+      <section className="text-center py-20 px-6">
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl md:text-5xl font-bold mb-6"
+        >
+          Manutenção de Computadores e Programas
+        </motion.h2>
+        <p className="text-gray-300 max-w-2xl mx-auto mb-8 text-lg">
+          Formatação, instalação de programas, remoção de vírus, upgrades e
+          suporte técnico especializado para deixar seu computador rápido e
+          seguro novamente.
+        </p>
+        <Button className="rounded-2xl px-8 py-3 text-lg">
+          Solicitar Orçamento
+        </Button>
+      </section>
+
+      {/* Services */}
+      <section className="py-16 px-6 bg-zinc-900">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+          <Card className="rounded-2xl shadow-lg">
+            <CardContent className="p-6 text-center">
+              <Monitor className="mx-auto mb-4" size={40} />
+              <h3 className="text-xl font-semibold mb-2">Formatação</h3>
+              <p className="text-gray-400">
+                Instalação limpa do sistema operacional com backup seguro.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl shadow-lg">
+            <CardContent className="p-6 text-center">
+              <ShieldCheck className="mx-auto mb-4" size={40} />
+              <h3 className="text-xl font-semibold mb-2">Remoção de Vírus</h3>
+              <p className="text-gray-400">
+                Eliminação de ameaças e proteção contra invasões.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl shadow-lg">
+            <CardContent className="p-6 text-center">
+              <Wrench className="mx-auto mb-4" size={40} />
+              <h3 className="text-xl font-semibold mb-2">Instalação de Programas</h3>
+              <p className="text-gray-400">
+                Instalação e configuração de softwares essenciais.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="py-20 px-6 text-center">
+        <h2 className="text-3xl font-bold mb-6">Entre em Contato</h2>
+        <p className="text-gray-400 mb-8">
+          Atendimento rápido e confiável. Fale agora mesmo!
+        </p>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+          <div className="flex items-center gap-2">
+            <Phone />
+            <span>(21) 99212-2228</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Mail />
+            <span>contato@codefixer.com</span>
+          </div>
+        </div>
+        
+        <div className="mt-8">
+          <a href="https://wa.me/5521992122228" target="_blank" rel="noopener noreferrer">
+            <Button className="rounded-2xl px-8 py-3 text-lg">
+              Falar no WhatsApp
+            </Button>
+          </a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-zinc-900 py-6 text-center text-gray-500 text-sm">
+        © {new Date().getFullYear()} CodeFixer - Todos os direitos reservados.
+      </footer>
+    </div>
+  );
+}
