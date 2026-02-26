@@ -6,172 +6,126 @@
 
 <title>CodeFixer | Manutenção de Computadores e Redes</title>
 
-<meta name="description" content="CodeFixer - Especialista em manutenção de computadores e redes. Formatação, remoção de vírus, upgrade SSD, montagem de PC gamer, configuração de redes e suporte técnico profissional.">
-<meta name="keywords" content="manutenção de computador, técnico em informática, formatação de pc, remoção de vírus, redes de computadores, upgrade SSD, suporte técnico">
-<meta name="author" content="CodeFixer">
+<meta name="description" content="CodeFixer - Especialista em manutenção de computadores e redes. Formatação, remoção de vírus, upgrade SSD, montagem de PC, configuração de redes e suporte técnico profissional.">
 
 <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1055/1055687.png">
-
-<!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- AOS Animation -->
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:'Orbitron',sans-serif;
+    background:#0a0f1c;
+    color:#fff;
+    scroll-behavior:smooth;
 }
-
-body {
-    font-family: 'Orbitron', sans-serif;
-    background: #0a0f1c;
-    color: #fff;
-    scroll-behavior: smooth;
+header{
+    position:fixed;
+    width:100%;
+    padding:20px 10%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(10,15,28,0.9);
+    backdrop-filter:blur(10px);
+    z-index:1000;
 }
-
-header {
-    position: fixed;
-    width: 100%;
-    padding: 20px 10%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(10,15,28,0.9);
-    backdrop-filter: blur(10px);
-    z-index: 1000;
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    color:#00f2ff;
 }
-
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #00f2ff;
+nav a{
+    color:#fff;
+    margin-left:25px;
+    text-decoration:none;
+    transition:0.3s;
 }
-
-nav a {
-    color: #fff;
-    margin-left: 25px;
-    text-decoration: none;
-    transition: 0.3s;
+nav a:hover{color:#00f2ff}
+.hero{
+    height:100vh;
+    background:linear-gradient(to right,#000428,#004e92);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:0 10%;
 }
-
-nav a:hover {
-    color: #00f2ff;
+.hero h1{
+    font-size:50px;
+    margin-bottom:20px;
 }
-
-.hero {
-    height: 100vh;
-    background: linear-gradient(to right, #000428, #004e92);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 0 10%;
+.hero span{color:#00f2ff}
+.hero p{
+    font-size:18px;
+    margin-bottom:30px;
 }
-
-.hero h1 {
-    font-size: 50px;
-    margin-bottom: 20px;
+.btn{
+    padding:14px 30px;
+    background:#00f2ff;
+    color:#000;
+    text-decoration:none;
+    font-weight:bold;
+    border-radius:5px;
+    transition:0.3s;
 }
-
-.hero span {
-    color: #00f2ff;
+.btn:hover{background:#fff}
+section{padding:100px 10%}
+.section-title{
+    text-align:center;
+    font-size:32px;
+    margin-bottom:60px;
+    color:#00f2ff;
 }
-
-.hero p {
-    font-size: 18px;
-    margin-bottom: 30px;
+.services{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:30px;
 }
-
-.btn {
-    padding: 14px 30px;
-    background: #00f2ff;
-    color: #000;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 5px;
-    transition: 0.3s;
+.card{
+    background:#111827;
+    padding:30px;
+    border-radius:10px;
+    transition:0.4s;
+    border:1px solid #00f2ff33;
 }
-
-.btn:hover {
-    background: #fff;
+.card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 0 25px #00f2ff55;
 }
-
-section {
-    padding: 100px 10%;
+.card i{
+    font-size:40px;
+    margin-bottom:20px;
+    color:#00f2ff;
 }
-
-.section-title {
-    text-align: center;
-    font-size: 32px;
-    margin-bottom: 60px;
-    color: #00f2ff;
+footer{
+    text-align:center;
+    padding:30px;
+    background:#000;
 }
-
-.services {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
+.social{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
 }
-
-.card {
-    background: #111827;
-    padding: 30px;
-    border-radius: 10px;
-    transition: 0.4s;
-    border: 1px solid #00f2ff33;
+.social a{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    color:#fff;
+    text-decoration:none;
 }
-
-.card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 0 25px #00f2ff55;
-}
-
-.card i {
-    font-size: 40px;
-    margin-bottom: 20px;
-    color: #00f2ff;
-}
-
-footer {
-    text-align: center;
-    padding: 30px;
-    background: #000;
-}
-
-.social {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.social a {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    color: #fff;
-    text-decoration: none;
-}
-
-.whatsapp {
-    background: #25D366;
-}
-
-.email {
-    background: #ea4335;
-}
+.whatsapp{background:#25D366}
+.email{background:#ea4335}
 </style>
 </head>
 
@@ -201,13 +155,13 @@ footer {
         <div class="card" data-aos="zoom-in">
             <i class="fas fa-laptop-code"></i>
             <h3>Formatação Profissional</h3>
-            <p>Instalação de sistemas, drivers, programas e otimização total.</p>
+            <p>Instalação de sistemas, drivers, programas e otimização completa.</p>
         </div>
 
         <div class="card" data-aos="zoom-in">
             <i class="fas fa-shield-virus"></i>
             <h3>Remoção de Vírus</h3>
-            <p>Proteção avançada e limpeza completa contra ameaças.</p>
+            <p>Eliminação de malwares e proteção avançada do sistema.</p>
         </div>
 
         <div class="card" data-aos="zoom-in">
@@ -219,7 +173,7 @@ footer {
         <div class="card" data-aos="zoom-in">
             <i class="fas fa-network-wired"></i>
             <h3>Infraestrutura de Redes</h3>
-            <p>Configuração de roteadores, Wi-Fi, cabeamento e redes empresariais.</p>
+            <p>Configuração de roteadores, Wi-Fi e redes corporativas.</p>
         </div>
 
         <div class="card" data-aos="zoom-in">
@@ -239,9 +193,9 @@ footer {
 
 <section id="sobre">
     <h2 class="section-title" data-aos="fade-up">Sobre a CodeFixer</h2>
-    <p style="text-align:center; max-width:800px; margin:auto;" data-aos="fade-up">
+    <p style="text-align:center;max-width:800px;margin:auto" data-aos="fade-up">
         A CodeFixer é especializada em manutenção de computadores e redes,
-        oferecendo soluções tecnológicas modernas, seguras e eficientes.
+        oferecendo soluções modernas, seguras e eficientes.
         Compromisso com qualidade, desempenho e satisfação total do cliente.
     </p>
 </section>
@@ -261,10 +215,7 @@ footer {
 
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
-AOS.init({
-    duration: 1000,
-    once: true
-});
+AOS.init({duration:1000,once:true});
 </script>
 
 </body>
