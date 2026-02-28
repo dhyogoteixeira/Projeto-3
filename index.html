@@ -6,71 +6,143 @@
 <title>CodeFixer - Gestão de Clientes</title>
 
 <style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
 body{
-    font-family: Arial;
+    font-family: 'Segoe UI', sans-serif;
     background:#0f172a;
     color:white;
-    padding:20px;
+    padding:15px;
 }
-h2{
+
+/* 🔥 HERO COM IMAGEM + EFEITO ESCURO */
+.hero{
+    position:relative;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:20px;
+    animation:fadeIn 1s ease-in-out;
+}
+
+.hero img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+    filter:brightness(40%);
+}
+
+.hero-content{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
     text-align:center;
 }
 
-/* 🔥 IMAGEM PRINCIPAL */
-.banner{
-    width:100%;
-    max-height:250px;
-    object-fit:cover;
-    border-radius:12px;
-    margin:15px 0;
-    box-shadow:0 4px 15px rgba(0,0,0,0.4);
+.hero-content h1{
+    font-size:28px;
+    letter-spacing:1px;
+}
+
+.hero-content p{
+    font-size:14px;
+    opacity:0.9;
+}
+
+/* 🔥 CARD PRINCIPAL */
+.container{
+    background:#1e293b;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    animation:slideUp 0.8s ease;
 }
 
 input, select, button{
     width:100%;
-    padding:10px;
-    margin:5px 0;
+    padding:12px;
+    margin:6px 0;
     border:none;
-    border-radius:8px;
+    border-radius:12px;
+    font-size:14px;
 }
+
 input, select{
-    background:#1e293b;
+    background:#0f172a;
     color:white;
 }
+
 button{
     background:#00c853;
     color:white;
     font-weight:bold;
     cursor:pointer;
+    transition:0.3s;
 }
+
 button:hover{
-    opacity:0.9;
+    transform:scale(1.03);
 }
+
+.top-btn{
+    background:#2196f3;
+}
+
 .card{
-    background:#1e293b;
+    background:#0f172a;
     padding:15px;
-    border-radius:10px;
+    border-radius:15px;
     margin-top:12px;
+    animation:fadeIn 0.5s ease;
 }
-.delete{ background:red; }
-.edit{ background:#ffc107; color:black; margin-top:5px;}
-.top-btn{ margin-top:10px; background:#2196f3; }
+
+.delete{
+    background:red;
+    margin-top:5px;
+}
+
+.edit{
+    background:#ffc107;
+    color:black;
+    margin-top:5px;
+}
+
 .report{
     background:#111827;
     padding:15px;
     margin-top:20px;
-    border-radius:10px;
+    border-radius:15px;
 }
+
+/* 🔥 ANIMAÇÕES */
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+@keyframes slideUp{
+    from{transform:translateY(30px); opacity:0;}
+    to{transform:translateY(0); opacity:1;}
+}
+
 </style>
 </head>
 <body>
 
-<h2>📊 CodeFixer - Gestão de Serviços</h2>
+<!-- 🔥 HERO -->
+<div class="hero">
+    <img src="https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&w=1200&q=80">
+    <div class="hero-content">
+        <h1>🖥 CodeFixer</h1>
+        <p>Gestão Profissional de Serviços</p>
+    </div>
+</div>
 
-<!-- 🔥 FOTO GRATUITA DE MANUTENÇÃO -->
-<img src="https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&w=1200&q=80"
-alt="Manutenção de Computador"
-class="banner">
+<div class="container">
 
 <input type="text" id="busca" placeholder="🔎 Buscar cliente..." onkeyup="buscar()">
 
@@ -100,6 +172,8 @@ class="banner">
 <div class="report">
 <h3>📊 Relatório Mensal</h3>
 <p id="relatorio"></p>
+</div>
+
 </div>
 
 <script>
@@ -217,6 +291,8 @@ mostrar();
 
 </body>
 </html>
+
+
 
 
 
