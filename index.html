@@ -3,170 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeFixer - Gestão de Clientes</title>
+<title>CodeFixer - Sistema de Orçamentos</title>
 
-<!-- 🔥 Biblioteca PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    font-family: 'Segoe UI', sans-serif;
-    background:#0f172a;
-    color:white;
-    padding:15px;
+    font-family: Arial;
+    background:#f4f6f9;
+    padding:20px;
 }
 
-.hero{
-    position:relative;
-    border-radius:20px;
-    overflow:hidden;
-    margin-bottom:20px;
-}
-
-.hero img{
-    width:100%;
-    height:220px;
-    object-fit:cover;
-    filter:brightness(40%);
-}
-
-.hero-content{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
+h1{
     text-align:center;
 }
 
-.container{
-    background:#1e293b;
-    padding:20px;
-    border-radius:20px;
-}
-
-input, select, button{
+input, button{
+    padding:10px;
+    margin:5px 0;
     width:100%;
-    padding:12px;
-    margin:6px 0;
-    border:none;
-    border-radius:12px;
-}
-
-input, select{
-    background:#0f172a;
-    color:white;
+    border-radius:5px;
+    border:1px solid #ccc;
 }
 
 button{
-    background:#00c853;
+    background:#1e88e5;
     color:white;
-    font-weight:bold;
+    border:none;
     cursor:pointer;
 }
 
-.top-btn{
-    background:#2196f3;
+button:hover{
+    opacity:0.9;
 }
 
 .card{
-    background:#0f172a;
+    background:white;
     padding:15px;
-    border-radius:15px;
-    margin-top:12px;
-}
-
-.delete{ background:red; margin-top:5px;}
-.edit{ background:#ffc107; color:black; margin-top:5px;}
-
-.report{
-    background:#111827;
-    padding:15px;
-    margin-top:20px;
-    border-radius:15px;
+    margin-top:15px;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 </style>
 </head>
 <body>
 
-<div class="hero">
-    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80">
-    <div class="hero-content">
-        <h1>🖥 CodeFixer</h1>
-        <p>Gestão Profissional de Serviços</p>
-    </div>
-</div>
+<h1>CodeFixer - Sistema de Clientes</h1>
 
-<div class="container">
-
-<input type="text" id="busca" placeholder="🔎 Buscar cliente..." onkeyup="buscar()">
-
-<input type="text" id="nome" placeholder="Nome">
-<input type="text" id="telefone" placeholder="Telefone">
+<input type="text" id="nome" placeholder="Nome do Cliente">
+<input type="text" id="telefone" placeholder="Telefone com DDD">
 <input type="text" id="endereco" placeholder="Endereço">
-
-<select id="servico">
-    <option value="">Tipo de Serviço</option>
-    <option>Formatação</option>
-    <option>Limpeza</option>
-    <option>Troca de SSD</option>
-    <option>Instalação de Programas</option>
-    <option>Montagem de PC</option>
-    <option>Outro</option>
-</select>
-
-<input type="number" id="valor" placeholder="Valor do Serviço (R$)">
+<input type="text" id="servico" placeholder="Tipo de Serviço">
+<input type="number" id="valor" placeholder="Valor do Serviço">
 <input type="date" id="data">
 <input type="time" id="hora">
 
-<button onclick="salvar()">Salvar</button>
-<button class="top-btn" onclick="exportarPDF()">📤 Exportar PDF</button>
+<button onclick="adicionar()">Adicionar Cliente</button>
 
 <div id="lista"></div>
 
-<div class="report">
-<h3>📊 Relatório Mensal</h3>
-<p id="relatorio"></p>
-</div>
-
-</div>
-
 <script>
-
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-let editIndex = null;
+let lista = document.getElementById("lista");
 
 function salvar(){
+    localStorage.setItem("clientes", JSON.stringify(clientes));
+}
+
+function adicionar(){
     const cliente = {
         nome: nome.value,
         telefone: telefone.value,
         endereco: endereco.value,
         servico: servico.value,
-        valor: parseFloat(valor.value) || 0,
+        valor: parseFloat(valor.value),
         data: data.value,
         hora: hora.value
     };
 
-    if(editIndex !== null){
-        clientes[editIndex] = cliente;
-        editIndex = null;
-    } else {
-        clientes.push(cliente);
-    }
+    clientes.push(cliente);
+    salvar();
+    mostrar();
 
-    localStorage.setItem("clientes", JSON.stringify(clientes));
-    limpar();
+    document.querySelectorAll("input").forEach(i => i.value = "");
+}
+
+function excluir(index){
+    clientes.splice(index,1);
+    salvar();
     mostrar();
 }
 
-function mostrar(listaFiltrada = clientes){
+function mostrar(){
     lista.innerHTML = "";
-    listaFiltrada.forEach((c,i)=>{
+    clientes.forEach((c,i)=>{
         lista.innerHTML += `
         <div class="card">
             <b>👤 ${c.nome}</b><br>
@@ -174,126 +104,107 @@ function mostrar(listaFiltrada = clientes){
             📍 ${c.endereco}<br>
             🛠 ${c.servico}<br>
             💰 R$ ${c.valor.toFixed(2)}<br>
-            📅 ${c.data} ⏰ ${c.hora}<br>
-            <button class="edit" onclick="editar(${i})">Editar</button>
-            <button class="delete" onclick="excluir(${i})">Excluir</button>
+            📅 ${c.data} ⏰ ${c.hora}<br><br>
+
+            <button onclick="gerarOrcamento(${i})">🧾 Gerar Orçamento</button>
+            <button onclick="enviarWhatsApp(${i})" style="background:#25D366;">📱 Enviar WhatsApp</button>
+            <button onclick="excluir(${i})" style="background:red;">Excluir</button>
         </div>`;
     });
-
-    gerarRelatorio();
 }
 
-function excluir(i){
-    clientes.splice(i,1);
-    localStorage.setItem("clientes", JSON.stringify(clientes));
-    mostrar();
-}
-
-function editar(i){
-    const c = clientes[i];
-    nome.value = c.nome;
-    telefone.value = c.telefone;
-    endereco.value = c.endereco;
-    servico.value = c.servico;
-    valor.value = c.valor;
-    data.value = c.data;
-    hora.value = c.hora;
-    editIndex = i;
-}
-
-function buscar(){
-    const termo = busca.value.toLowerCase();
-    const filtrados = clientes.filter(c =>
-        c.nome.toLowerCase().includes(termo)
-    );
-    mostrar(filtrados);
-}
-
-function gerarRelatorio(){
-    const mesAtual = new Date().getMonth();
-    let total = 0;
-    let quantidade = 0;
-
-    clientes.forEach(c=>{
-        if(c.data){
-            const dataCliente = new Date(c.data);
-            if(dataCliente.getMonth() === mesAtual){
-                total += c.valor;
-                quantidade++;
-            }
-        }
-    });
-
-    relatorio.innerHTML = `
-    Serviços no mês: ${quantidade}<br>
-    Faturamento mensal: R$ ${total.toFixed(2)}
-    `;
-}
-
-/* 🔥 PDF PROFISSIONAL */
-function exportarPDF(){
-
-    if(clientes.length === 0){
-        alert("Nenhum cliente cadastrado.");
-        return;
-    }
+function gerarOrcamento(index){
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    let y = 20;
+    const cliente = clientes[index];
+    const numeroOrcamento = Math.floor(Math.random()*10000);
+    const dataAtual = new Date().toLocaleDateString("pt-BR");
 
-    doc.setFontSize(22);
-    doc.text("CodeFixer", 105, y, { align: "center" });
+    const img = new Image();
+    img.src = "logo.png";
 
-    y += 10;
-    doc.setFontSize(12);
-    doc.text("Relatório de Clientes", 105, y, { align: "center" });
+    img.onload = function(){
 
-    y += 15;
+        doc.addImage(img, "PNG", 10, 10, 40, 20);
 
-    clientes.forEach((c, index) => {
+        doc.setFontSize(20);
+        doc.text("CodeFixer", 105, 20, { align: "center" });
+
+        doc.setFontSize(16);
+        doc.text("ORÇAMENTO", 105, 30, { align: "center" });
+
+        doc.setFontSize(10);
+        doc.text(`Orçamento Nº ${numeroOrcamento}`, 150, 15);
+        doc.text(`Data: ${dataAtual}`, 150, 22);
+
+        doc.line(10, 40, 200, 40);
+
+        let y = 50;
+
+        doc.setFontSize(12);
+        doc.text(`Cliente: ${cliente.nome}`, 10, y); y += 8;
+        doc.text(`Telefone: ${cliente.telefone}`, 10, y); y += 8;
+        doc.text(`Endereço: ${cliente.endereco}`, 10, y); y += 12;
+
+        doc.line(10, y, 200, y);
+        y += 10;
 
         doc.setFontSize(14);
-        doc.text(`Cliente ${index + 1}`, 10, y);
+        doc.text("Descrição do Serviço:", 10, y);
         y += 8;
 
-        doc.setFontSize(11);
-        doc.text(`Nome: ${c.nome}`, 10, y); y += 6;
-        doc.text(`Telefone: ${c.telefone}`, 10, y); y += 6;
-        doc.text(`Endereço: ${c.endereco}`, 10, y); y += 6;
-        doc.text(`Serviço: ${c.servico}`, 10, y); y += 6;
-        doc.text(`Valor: R$ ${c.valor.toFixed(2)}`, 10, y); y += 6;
-        doc.text(`Data: ${c.data}  Hora: ${c.hora}`, 10, y);
+        doc.setFontSize(12);
+        doc.text(cliente.servico, 10, y);
+        y += 15;
 
-        y += 12;
+        doc.setFontSize(14);
+        doc.text(`Valor Total: R$ ${cliente.valor.toFixed(2)}`, 10, y);
+        y += 25;
 
-        if(y > 270){
-            doc.addPage();
-            y = 20;
-        }
+        doc.line(10, y, 90, y);
+        doc.text("Assinatura do Cliente", 10, y + 8);
 
-    });
-
-    doc.save("clientes_codefixer.pdf");
+        doc.save(`Orcamento_${cliente.nome}.pdf`);
+    }
 }
 
-function limpar(){
-    nome.value="";
-    telefone.value="";
-    endereco.value="";
-    servico.value="";
-    valor.value="";
-    data.value="";
-    hora.value="";
+function enviarWhatsApp(index){
+
+    const cliente = clientes[index];
+
+    let numero = cliente.telefone.replace(/\D/g, '');
+
+    if(!numero.startsWith("55")){
+        numero = "55" + numero;
+    }
+
+    const mensagem = 
+`Olá ${cliente.nome}, tudo bem? 👋
+
+Segue o orçamento do seu serviço:
+
+🛠 Serviço: ${cliente.servico}
+💰 Valor: R$ ${cliente.valor.toFixed(2)}
+📅 Data: ${cliente.data}
+⏰ Hora: ${cliente.hora}
+
+Qualquer dúvida estou à disposição.
+
+— CodeFixer 💻`;
+
+    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
+    window.open(url, '_blank');
 }
 
 mostrar();
-
 </script>
 
 </body>
 </html>
+
 
 
 
