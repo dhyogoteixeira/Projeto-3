@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cadastro de Clientes</title>
+<title>CodeFixer - Gestão de Clientes</title>
 
 <style>
 body{
@@ -15,10 +15,21 @@ body{
 h2{
     text-align:center;
 }
+
+/* 🔥 IMAGEM PRINCIPAL */
+.banner{
+    width:100%;
+    max-height:250px;
+    object-fit:cover;
+    border-radius:12px;
+    margin:15px 0;
+    box-shadow:0 4px 15px rgba(0,0,0,0.4);
+}
+
 input, select, button{
     width:100%;
-    padding:12px;
-    margin:6px 0;
+    padding:10px;
+    margin:5px 0;
     border:none;
     border-radius:8px;
 }
@@ -41,19 +52,31 @@ button:hover{
     border-radius:10px;
     margin-top:12px;
 }
-.delete{
-    background:red;
-    margin-top:10px;
+.delete{ background:red; }
+.edit{ background:#ffc107; color:black; margin-top:5px;}
+.top-btn{ margin-top:10px; background:#2196f3; }
+.report{
+    background:#111827;
+    padding:15px;
+    margin-top:20px;
+    border-radius:10px;
 }
 </style>
 </head>
 <body>
 
-<h2>📋 Cadastro de Clientes</h2>
+<h2>📊 CodeFixer - Gestão de Serviços</h2>
 
-<input type="text" id="nome" placeholder="Nome do Cliente" required>
-<input type="text" id="telefone" placeholder="Telefone" required>
-<input type="text" id="endereco" placeholder="Endereço" required>
+<!-- 🔥 FOTO GRATUITA DE MANUTENÇÃO -->
+<img src="https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&w=1200&q=80"
+alt="Manutenção de Computador"
+class="banner">
+
+<input type="text" id="busca" placeholder="🔎 Buscar cliente..." onkeyup="buscar()">
+
+<input type="text" id="nome" placeholder="Nome">
+<input type="text" id="telefone" placeholder="Telefone">
+<input type="text" id="endereco" placeholder="Endereço">
 
 <select id="servico">
     <option value="">Tipo de Serviço</option>
@@ -65,59 +88,66 @@ button:hover{
     <option>Outro</option>
 </select>
 
+<input type="number" id="valor" placeholder="Valor do Serviço (R$)">
 <input type="date" id="data">
 <input type="time" id="hora">
 
-<button onclick="salvar()">Salvar Cliente</button>
+<button onclick="salvar()">Salvar</button>
+<button class="top-btn" onclick="exportarPDF()">📤 Exportar PDF</button>
 
 <div id="lista"></div>
 
+<div class="report">
+<h3>📊 Relatório Mensal</h3>
+<p id="relatorio"></p>
+</div>
+
 <script>
+
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let editIndex = null;
 
 function salvar(){
-
-    if(nome.value === "" || telefone.value === "" || endereco.value === ""){
-        alert("Preencha os campos obrigatórios!");
-        return;
-    }
 
     const cliente = {
         nome: nome.value,
         telefone: telefone.value,
         endereco: endereco.value,
         servico: servico.value,
+        valor: parseFloat(valor.value) || 0,
         data: data.value,
         hora: hora.value
     };
 
-    clientes.push(cliente);
+    if(editIndex !== null){
+        clientes[editIndex] = cliente;
+        editIndex = null;
+    } else {
+        clientes.push(cliente);
+    }
+
     localStorage.setItem("clientes", JSON.stringify(clientes));
-
-    nome.value = "";
-    telefone.value = "";
-    endereco.value = "";
-    servico.value = "";
-    data.value = "";
-    hora.value = "";
-
+    limpar();
     mostrar();
 }
 
-function mostrar(){
+function mostrar(listaFiltrada = clientes){
     lista.innerHTML = "";
-
-    clientes.forEach((c,i)=>{
+    listaFiltrada.forEach((c,i)=>{
         lista.innerHTML += `
         <div class="card">
             <b>👤 ${c.nome}</b><br>
             📞 ${c.telefone}<br>
             📍 ${c.endereco}<br>
-            🛠 Serviço: ${c.servico || "-"}<br>
-            📅 ${c.data || "-"} ⏰ ${c.hora || "-"}<br>
+            🛠 ${c.servico}<br>
+            💰 R$ ${c.valor.toFixed(2)}<br>
+            📅 ${c.data} ⏰ ${c.hora}<br>
+            <button class="edit" onclick="editar(${i})">Editar</button>
             <button class="delete" onclick="excluir(${i})">Excluir</button>
         </div>`;
     });
+
+    gerarRelatorio();
 }
 
 function excluir(i){
@@ -126,11 +156,69 @@ function excluir(i){
     mostrar();
 }
 
+function editar(i){
+    const c = clientes[i];
+    nome.value = c.nome;
+    telefone.value = c.telefone;
+    endereco.value = c.endereco;
+    servico.value = c.servico;
+    valor.value = c.valor;
+    data.value = c.data;
+    hora.value = c.hora;
+    editIndex = i;
+}
+
+function buscar(){
+    const termo = busca.value.toLowerCase();
+    const filtrados = clientes.filter(c =>
+        c.nome.toLowerCase().includes(termo)
+    );
+    mostrar(filtrados);
+}
+
+function gerarRelatorio(){
+    const mesAtual = new Date().getMonth();
+    let total = 0;
+    let quantidade = 0;
+
+    clientes.forEach(c=>{
+        if(c.data){
+            const dataCliente = new Date(c.data);
+            if(dataCliente.getMonth() === mesAtual){
+                total += c.valor;
+                quantidade++;
+            }
+        }
+    });
+
+    relatorio.innerHTML = `
+    Serviços no mês: ${quantidade}<br>
+    Faturamento mensal: R$ ${total.toFixed(2)}
+    `;
+}
+
+function exportarPDF(){
+    window.print();
+}
+
+function limpar(){
+    nome.value="";
+    telefone.value="";
+    endereco.value="";
+    servico.value="";
+    valor.value="";
+    data.value="";
+    hora.value="";
+}
+
 mostrar();
+
 </script>
 
 </body>
 </html>
+
+
 
 
 
