@@ -3,71 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeFixer - Sistema de Orçamentos</title>
+<title>CodeFixer - Sistema Profissional</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
 body{
-    font-family: Arial;
-    background:#f4f6f9;
-    padding:20px;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height:100vh;
+    padding:30px;
+    color:white;
 }
 
-h1{
+header{
     text-align:center;
+    margin-bottom:30px;
+    animation: fadeIn 1s ease-in-out;
 }
 
-input, button{
-    padding:10px;
-    margin:5px 0;
+header img{
+    width:120px;
+    margin-bottom:10px;
+}
+
+header h1{
+    font-size:28px;
+    font-weight:700;
+}
+
+.form-container{
+    background: rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:15px;
+    backdrop-filter: blur(10px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.3);
+    margin-bottom:30px;
+}
+
+input{
     width:100%;
-    border-radius:5px;
-    border:1px solid #ccc;
+    padding:12px;
+    margin:8px 0;
+    border:none;
+    border-radius:8px;
 }
 
 button{
-    background:#1e88e5;
-    color:white;
+    padding:12px;
+    width:100%;
     border:none;
+    border-radius:8px;
     cursor:pointer;
+    font-weight:600;
+    transition:0.3s;
 }
 
-button:hover{
-    opacity:0.9;
+.btn-primary{
+    background:#00c6ff;
+    color:white;
+}
+
+.btn-primary:hover{
+    background:#0072ff;
+    transform:scale(1.05);
 }
 
 .card{
     background:white;
-    padding:15px;
+    color:#333;
+    padding:20px;
+    border-radius:15px;
     margin-top:15px;
-    border-radius:8px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    box-shadow:0 6px 15px rgba(0,0,0,0.2);
+    animation: fadeUp 0.5s ease;
+}
+
+.card button{
+    margin-top:8px;
+}
+
+.btn-pdf{
+    background:#1565c0;
+    color:white;
+}
+
+.btn-whats{
+    background:#25D366;
+    color:white;
+}
+
+.btn-delete{
+    background:red;
+    color:white;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(20px);}
+    to{opacity:1; transform:translateY(0);}
 }
 </style>
 </head>
 <body>
 
-<h1>CodeFixer - Sistema de Clientes</h1>
+<header>
+    <img src="https://images.unsplash.com/photo-1581091870627-3c2b7c5a4c9b?auto=format&fit=crop&w=300&q=80">
+    <h1>CodeFixer - Sistema de Orçamentos</h1>
+</header>
 
-<input type="text" id="nome" placeholder="Nome do Cliente">
-<input type="text" id="telefone" placeholder="Telefone com DDD">
-<input type="text" id="endereco" placeholder="Endereço">
-<input type="text" id="servico" placeholder="Tipo de Serviço">
-<input type="number" id="valor" placeholder="Valor do Serviço">
-<input type="date" id="data">
-<input type="time" id="hora">
-
-<button onclick="adicionar()">Adicionar Cliente</button>
+<div class="form-container">
+    <input type="text" id="nome" placeholder="Nome do Cliente">
+    <input type="text" id="telefone" placeholder="Telefone com DDD">
+    <input type="text" id="endereco" placeholder="Endereço">
+    <input type="text" id="servico" placeholder="Tipo de Serviço">
+    <input type="number" id="valor" placeholder="Valor do Serviço">
+    <input type="date" id="data">
+    <input type="time" id="hora">
+    <button class="btn-primary" onclick="adicionar()">Adicionar Cliente</button>
+</div>
 
 <div id="lista"></div>
 
 <script>
 let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let contadorOrcamento = parseInt(localStorage.getItem("contadorOrcamento")) || 1;
 let lista = document.getElementById("lista");
 
 function salvar(){
     localStorage.setItem("clientes", JSON.stringify(clientes));
+    localStorage.setItem("contadorOrcamento", contadorOrcamento);
 }
 
 function adicionar(){
@@ -104,99 +181,62 @@ function mostrar(){
             📍 ${c.endereco}<br>
             🛠 ${c.servico}<br>
             💰 R$ ${c.valor.toFixed(2)}<br>
-            📅 ${c.data} ⏰ ${c.hora}<br><br>
+            📅 ${c.data} ⏰ ${c.hora}<br>
 
-            <button onclick="gerarOrcamento(${i})">🧾 Gerar Orçamento</button>
-            <button onclick="enviarWhatsApp(${i})" style="background:#25D366;">📱 Enviar WhatsApp</button>
-            <button onclick="excluir(${i})" style="background:red;">Excluir</button>
+            <button class="btn-pdf" onclick="gerarOrcamento(${i})">🧾 Gerar PDF</button>
+            <button class="btn-whats" onclick="enviarWhatsApp(${i})">📱 WhatsApp</button>
+            <button class="btn-delete" onclick="excluir(${i})">Excluir</button>
         </div>`;
     });
 }
 
 function gerarOrcamento(index){
-
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
     const cliente = clientes[index];
-    const numeroOrcamento = Math.floor(Math.random()*10000);
+    const numeroAtual = contadorOrcamento++;
     const dataAtual = new Date().toLocaleDateString("pt-BR");
 
-    const img = new Image();
-    img.src = "logo.png";
+    salvar();
 
-    img.onload = function(){
+    doc.setFontSize(18);
+    doc.text("CodeFixer - ORÇAMENTO", 105, 20, { align: "center" });
 
-        doc.addImage(img, "PNG", 10, 10, 40, 20);
+    doc.text(`Orçamento Nº ${numeroAtual}`, 10, 35);
+    doc.text(`Data: ${dataAtual}`, 150, 35);
 
-        doc.setFontSize(20);
-        doc.text("CodeFixer", 105, 20, { align: "center" });
+    doc.line(10, 40, 200, 40);
 
-        doc.setFontSize(16);
-        doc.text("ORÇAMENTO", 105, 30, { align: "center" });
+    doc.text(`Cliente: ${cliente.nome}`, 10, 55);
+    doc.text(`Telefone: ${cliente.telefone}`, 10, 65);
+    doc.text(`Serviço: ${cliente.servico}`, 10, 75);
+    doc.text(`Valor: R$ ${cliente.valor.toFixed(2)}`, 10, 85);
 
-        doc.setFontSize(10);
-        doc.text(`Orçamento Nº ${numeroOrcamento}`, 150, 15);
-        doc.text(`Data: ${dataAtual}`, 150, 22);
+    doc.line(10, 120, 90, 120);
+    doc.text("Assinatura do Cliente", 10, 130);
 
-        doc.line(10, 40, 200, 40);
-
-        let y = 50;
-
-        doc.setFontSize(12);
-        doc.text(`Cliente: ${cliente.nome}`, 10, y); y += 8;
-        doc.text(`Telefone: ${cliente.telefone}`, 10, y); y += 8;
-        doc.text(`Endereço: ${cliente.endereco}`, 10, y); y += 12;
-
-        doc.line(10, y, 200, y);
-        y += 10;
-
-        doc.setFontSize(14);
-        doc.text("Descrição do Serviço:", 10, y);
-        y += 8;
-
-        doc.setFontSize(12);
-        doc.text(cliente.servico, 10, y);
-        y += 15;
-
-        doc.setFontSize(14);
-        doc.text(`Valor Total: R$ ${cliente.valor.toFixed(2)}`, 10, y);
-        y += 25;
-
-        doc.line(10, y, 90, y);
-        doc.text("Assinatura do Cliente", 10, y + 8);
-
-        doc.save(`Orcamento_${cliente.nome}.pdf`);
-    }
+    doc.save(`Orcamento_${numeroAtual}.pdf`);
 }
 
 function enviarWhatsApp(index){
-
     const cliente = clientes[index];
-
-    let numero = cliente.telefone.replace(/\D/g, '');
-
+    let numero = cliente.telefone.replace(/\D/g,'');
     if(!numero.startsWith("55")){
         numero = "55" + numero;
     }
 
-    const mensagem = 
-`Olá ${cliente.nome}, tudo bem? 👋
+    const mensagem =
+`Olá ${cliente.nome} 👋
+Segue seu orçamento CodeFixer:
 
-Segue o orçamento do seu serviço:
+🛠 ${cliente.servico}
+💰 R$ ${cliente.valor.toFixed(2)}
+📅 ${cliente.data}
+⏰ ${cliente.hora}
 
-🛠 Serviço: ${cliente.servico}
-💰 Valor: R$ ${cliente.valor.toFixed(2)}
-📅 Data: ${cliente.data}
-⏰ Hora: ${cliente.hora}
+Aguardamos confirmação! 💻`;
 
-Qualquer dúvida estou à disposição.
-
-— CodeFixer 💻`;
-
-    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
-
-    window.open(url, '_blank');
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`,'_blank');
 }
 
 mostrar();
@@ -204,6 +244,7 @@ mostrar();
 
 </body>
 </html>
+
 
 
 
