@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CodeFixer - Gestão de Clientes</title>
 
+<!-- 🔥 Biblioteca PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 *{
     margin:0;
@@ -19,13 +22,11 @@ body{
     padding:15px;
 }
 
-/* HERO */
 .hero{
     position:relative;
     border-radius:20px;
     overflow:hidden;
     margin-bottom:20px;
-    animation:fadeIn 1s ease-in-out;
 }
 
 .hero img{
@@ -43,23 +44,10 @@ body{
     text-align:center;
 }
 
-.hero-content h1{
-    font-size:28px;
-    letter-spacing:1px;
-}
-
-.hero-content p{
-    font-size:14px;
-    opacity:0.9;
-}
-
-/* CONTAINER */
 .container{
     background:#1e293b;
     padding:20px;
     border-radius:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.4);
-    animation:slideUp 0.8s ease;
 }
 
 input, select, button{
@@ -68,7 +56,6 @@ input, select, button{
     margin:6px 0;
     border:none;
     border-radius:12px;
-    font-size:14px;
 }
 
 input, select{
@@ -81,11 +68,6 @@ button{
     color:white;
     font-weight:bold;
     cursor:pointer;
-    transition:0.3s;
-}
-
-button:hover{
-    transform:scale(1.03);
 }
 
 .top-btn{
@@ -97,19 +79,10 @@ button:hover{
     padding:15px;
     border-radius:15px;
     margin-top:12px;
-    animation:fadeIn 0.5s ease;
 }
 
-.delete{
-    background:red;
-    margin-top:5px;
-}
-
-.edit{
-    background:#ffc107;
-    color:black;
-    margin-top:5px;
-}
+.delete{ background:red; margin-top:5px;}
+.edit{ background:#ffc107; color:black; margin-top:5px;}
 
 .report{
     background:#111827;
@@ -117,23 +90,11 @@ button:hover{
     margin-top:20px;
     border-radius:15px;
 }
-
-/* ANIMAÇÕES */
-@keyframes fadeIn{
-    from{opacity:0;}
-    to{opacity:1;}
-}
-
-@keyframes slideUp{
-    from{transform:translateY(30px); opacity:0;}
-    to{transform:translateY(0); opacity:1;}
-}
 </style>
 </head>
 <body>
 
 <div class="hero">
-    <!-- 🔥 NOVA IMAGEM DE COMPUTADOR -->
     <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80">
     <div class="hero-content">
         <h1>🖥 CodeFixer</h1>
@@ -269,8 +230,52 @@ function gerarRelatorio(){
     `;
 }
 
+/* 🔥 PDF PROFISSIONAL */
 function exportarPDF(){
-    window.print();
+
+    if(clientes.length === 0){
+        alert("Nenhum cliente cadastrado.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let y = 20;
+
+    doc.setFontSize(22);
+    doc.text("CodeFixer", 105, y, { align: "center" });
+
+    y += 10;
+    doc.setFontSize(12);
+    doc.text("Relatório de Clientes", 105, y, { align: "center" });
+
+    y += 15;
+
+    clientes.forEach((c, index) => {
+
+        doc.setFontSize(14);
+        doc.text(`Cliente ${index + 1}`, 10, y);
+        y += 8;
+
+        doc.setFontSize(11);
+        doc.text(`Nome: ${c.nome}`, 10, y); y += 6;
+        doc.text(`Telefone: ${c.telefone}`, 10, y); y += 6;
+        doc.text(`Endereço: ${c.endereco}`, 10, y); y += 6;
+        doc.text(`Serviço: ${c.servico}`, 10, y); y += 6;
+        doc.text(`Valor: R$ ${c.valor.toFixed(2)}`, 10, y); y += 6;
+        doc.text(`Data: ${c.data}  Hora: ${c.hora}`, 10, y);
+
+        y += 12;
+
+        if(y > 270){
+            doc.addPage();
+            y = 20;
+        }
+
+    });
+
+    doc.save("clientes_codefixer.pdf");
 }
 
 function limpar(){
@@ -289,6 +294,8 @@ mostrar();
 
 </body>
 </html>
+
+
 
 
 
